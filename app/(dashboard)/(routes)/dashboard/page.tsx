@@ -14,7 +14,7 @@ const colorMap = new Map([
   ["/code", "bg-green-700/10"],
 ]);
 
-const tools = routes.slice(1, 6).map((route) => {
+export const tools = routes.slice(1, 6).map((route) => {
   return {
     ...route,
     bgColor: colorMap.get(route.href),

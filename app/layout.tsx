@@ -12,7 +12,7 @@ import {
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SmartHub",
+  title: "Smart Hub",
   description: "AI-Powered Platform",
 };
 
