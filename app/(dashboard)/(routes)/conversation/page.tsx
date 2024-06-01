@@ -1,6 +1,7 @@
 "use client";
+
 import Heading from "@/components/Heading";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { formSchema } from "./constants";
 import * as z from "zod";
@@ -8,8 +9,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 
 const ConversationPage = () => {
+  const router = useRouter();
+  const [messages, setMessages] = useState<ChatCompletionMessageParam[]>([]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -20,7 +27,29 @@ const ConversationPage = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    try {
+      const userMessage: ChatCompletionMessageParam = {
+        role: "user",
+        content: values.prompt,
+      };
+      const newMessages = [...messages, userMessage];
+      const response = await axios.post("/api/conversation", {
+        messages: newMessages,
+      });
+
+      const answer = JSON.parse(response.data);
+
+      console.log(answer);
+
+      setMessages((current) => [...current, userMessage, answer]);
+
+      form.reset();
+    } catch (error) {
+      // TODO: Open Pro Modal
+      console.log(error);
+    } finally {
+      router.refresh();
+    }
   };
 
   return (
@@ -55,7 +84,13 @@ const ConversationPage = () => {
           </Form>
         </div>
 
-        <div className="space-y-4 mt-4">Message Content</div>
+        <div className="space-y-4 mt-4">
+          <div className="flex flex-col-reverse gap-y-4">
+            {messages.map((message, index) => (
+              <div key={index}>{message.content as string}</div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
